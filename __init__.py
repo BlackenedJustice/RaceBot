@@ -107,6 +107,7 @@ def get_name(message):
     try:
         user = User.get(User.tg_id == message.chat.id)
     except DoesNotExist:
+        logger.warning('@{} has not been registered yet!'.format(message.from_user.username))
         bot.send_message(message.chat.id, config.doesNotExist)
         return
     user.name = message.text
@@ -129,6 +130,7 @@ def add_cmd(message):
     try:
         group = Groups.get(Groups.group_no == group_no)
     except DoesNotExist:
+        logger.warning('{} group does not exist!'.format(group_no))
         bot.send_message(message.chat.id, 'Что-то пошло не так, пожалуйста, попробуйте еще раз.\nЕсли ошибка повторится'
                                           ' - напишите @{}'.format(config.creatorID))
         return
@@ -157,6 +159,7 @@ def add_cmd(message):
     try:
         group = Groups.get(Groups.group_no == group_no)
     except DoesNotExist:
+        logger.warning('{} group does not exist!'.format(group_no))
         bot.send_message(message.chat.id, 'Что-то пошло не так, пожалуйста, попробуйте еще раз.\nЕсли ошибка повторится'
                                           ' - напишите @{}'.format(config.creatorID))
         return
@@ -188,6 +191,7 @@ def show_cmd(message):
     try:
         group = Groups.get(Groups.group_no == group_no)
     except DoesNotExist:
+        logger.warning('{} group does not exist!'.format(group_no))
         bot.send_message(message.chat.id, 'Что-то пошло не так, пожалуйста, попробуйте еще раз.\nЕсли ошибка повторится'
                                           ' - напишите @{}'.format(config.creatorID))
         return
@@ -243,6 +247,16 @@ def make_admin_cmd(message):
     logger.info('User {} - {} become an admin'.format(user.name, user.username))
     bot.send_message(message.chat.id, 'Success!')
     bot.send_message(user.tg_id, 'You become an Admin!')
+
+
+@bot.message_handler(commands=['reset'])
+@restricted(Role.GOD)
+def reset_cmd(message):
+    for group in Groups.select():
+        group.points = 0
+        group.save()
+    logger.warning('@{} reset all points'.format(message.from_user.username))
+    bot.send_message(message.chat.id, 'All groups was successfully reset!')
 
 
 @bot.message_handler(commands=['everyone'])
