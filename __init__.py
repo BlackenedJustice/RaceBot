@@ -17,7 +17,6 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger.setLevel(logging.DEBUG)
 
 bot = telebot.TeleBot(token=config.token)
-print('AAAA')
 '''
 # using proxy in Russia
 apihelper.proxy = {
