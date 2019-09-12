@@ -1,3 +1,4 @@
+# coding=utf-8
 from telebot import types
 from telebot import apihelper
 from peewee import DoesNotExist
@@ -177,11 +178,10 @@ def add_cmd(message):
 
 
 @bot.message_handler(commands=['show'])
-@restricted(Role.ADMIN)
 def show_cmd(message):
     l = message.text.split(' ')
     if len(l) != 2 or not l[1].isdecimal():
-        bot.send_message(message.chat.id, 'Wrong format!\n/show group_no')
+        bot.send_message(message.chat.id, 'Неправильный формат команды!\n/show group_no')
         return
     group_no = int(l[1])
     if group_no not in config.group_numbers:
@@ -197,11 +197,19 @@ def show_cmd(message):
     bot.send_message(message.chat.id, '{} группа - {} очков'.format(group.group_no, group.points))
 
 
+# TODO: Защита от спама!!!
+@MWT(timeout=1 * 60)
+def get_rating():
+    rating = 'Текущий рейтинг:\n'
+    for group in Groups.select().order_by(Groups.points.desc()):
+        rating += '{}: {}\n'.format(group.group_no, group.points)
+    logger.info('Current rating was updated')
+    return rating
+
+
 @bot.message_handler(commands=['info'])
 def info_cmd(message):
-    msg = 'Текущий рейтинг:\n'
-    for group in Groups.select().order_by(Groups.points.desc()):
-        msg += '{}: {}\n'.format(group.group_no, group.points)
+    msg = get_rating()
     bot.send_message(message.chat.id, msg)
 
 
